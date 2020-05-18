@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import os
+
 from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
 from users import init_user, user_response, user_set_status, user_checkin, all_statuses
@@ -10,6 +12,10 @@ except ImportError:
     IFRAME_URL = None
 
 app = Flask(__name__)
+
+if os.getenv('APPLICATION_ROOT'):
+    app.config['APPLICATION_ROOT'] = os.getenv('APPLICATION_ROOT')
+
 socketio = SocketIO(app)
 
 @app.route('/<path:names>')
