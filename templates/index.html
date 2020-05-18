@@ -5,60 +5,85 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
 
     <script type="text/javascript">
-    var socket, selfInfo;
+    var socket, selfInfo, selfName;
     function initSocket() {
+        selfName = document.body.getAttribute('data-self-name');
         selfInfo = {
-            self_name: document.body.getAttribute('data-self-name'),
+            self_name: selfName,
             conn_names: document.body.getAttribute('data-conn-names')
         };
         socket = io();
         socket.on('connect', function() {
             socket.emit('init', selfInfo);
         });
-        socket.on('init_response', function() {
+        socket.on('init_response', function(config) {
+            if (config['iframe_url']) {
+                document.querySelector('#iframe').setAttribute('src', config['iframe_url']);
+            }
             socket.emit('update', selfInfo);
         })
         socket.on('response', function(data) {
-            console.log(data);
+            console.log('response:', data);
+            if (data['self_status'] && curStatus == "INITIALIZING") {
+                setStatus(data['self_status']);
+            }
             Object.keys(data['statuses']).forEach(function(e) {
-                console.log(e, data['statuses'][e]);
+                console.log('update:', e, data['statuses'][e]);
                 updateName(e, data['statuses'][e]);
             })
-
         });
     }
 
     function initConnNames() {
-        /*
         var names = document.body.getAttribute('data-conn-names').split(',');
+        addColumn('self', selfName);
         for (var i=0; i<names.length; i++) {
-            var e = document.createElement('p');
-            e.setAttribute('data-name', names[i]);
-            e.innerHTML = names[i] + ' status LOADING';
-            document.body.appendChild(e);
+            addColumn('remote', names[i]);
         }
-        */
     }
 
     function updateName(name, status) {
         console.log('updateName', name, status);
-        /*
-        var e = document.querySelector('[data-name="' + name + '"]');
-        if (!e) return;
-        e.innerHTML = name + ' status ' + status;
-        */
+        var el = document.querySelector('div[data-name="' + name + '"]');
+        if (el) {
+            el.setAttribute('data-status', status);
+        }
     }
 
-    var curStatus = "UNKNOWN";
+    var curStatus = "INITIALIZING";
     function setStatus(status) {
         var dict = Object.assign({}, selfInfo);
         curStatus = status;
         dict['status'] = status;
         socket.emit('set_status', dict);
+        updateName(selfName, status);
     }
 
     function checkin() {
         socket.emit('checkin', selfInfo);
+    }
+
+    function render(id, data) {
+        var scr = document.querySelector('script[type="text/template"]#' + id);
+        if (!scr) return;
+        var tpl = scr.innerHTML;
+        Object.keys(data).forEach(function(key) {
+            tpl = tpl.replace(new RegExp("\\{" + key + "\\}", "g"), data[key]);
+        });
+        return tpl;
+    }
+
+    function addColumn(type, name) {
+        var data = {
+            "name": name,
+            "title": name.charAt(0).toUpperCase() + name.substr(1, name.length),
+            "status1": "Busy",
+            "status2": "Working",
+            "status3": "Available"
+        };
+
+        var area = document.getElementById('connection-area');
+        area.insertAdjacentHTML('beforeend', render(type + "-tpl", data));
     }
 
     window.onload = function() {
@@ -69,27 +94,87 @@
     </script>
     <style>
 * {
-    box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
-.container {
-    height: 100vh;
-    width: 100vw;
-    display: table;
+body {
+    background: black;
+    color: white;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    text-align: center;
+    vertical-align: middle;
 }
 
-.col {
-    display: table-cell;
-    height: 100vh;
-    width: auto;
-    margin: 0;
-    padding: 0;
+.column-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-rows: 1fr;
 }
 
-.col .status-btn {
-    height: 30vh;
+.row-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 0.25fr repeat(3, 1fr);
+    height: 100vh;
 }
+
+.right-row-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(2, 1fr);
+    height: 100vh;
+}
+
+.row-container > div, .right-row-container > div {
+    outline: 1px solid white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#connection-area {
+    display: contents;
+}
+
+.row-container.self .status {
+    cursor: pointer;
+}
+
+.status1 {
+    background: #930000;
+}
+
+.status2 {
+    background: #c07c00;
+}
+
+.status3 {
+    background: #007600;
+}
+
+.row-container .status {
+    opacity: 0.4;
+}
+
+.row-container[data-status="BUSY"] .status1 {
+    opacity: 1;
+}
+
+.row-container[data-status="WORKING"] .status2 {
+    opacity: 1;
+}
+
+.row-container[data-status="AVAILABLE"] .status3 {
+    opacity: 1;
+}
+
+#iframe {
+    border: 0;
+    background: transparent;
+    width: 100%;
+    height: 100%;
+}
+
     </style>
 </head>
 <body data-self-name="{{ self_name }}" data-conn-names="{{ conn_names }}">
@@ -98,33 +183,33 @@
     <button onclick="setStatus('BUSY')">set status BUSY</button>
     <p></p>
     -->
+<script type="text/template" id="self-tpl">
+    <div class="row-container self" data-self="true" data-name="{name}" data-status="UNKNOWN"> 
+        <div class="title">{title}</div>
+        <div class="status status1" onclick="setStatus('BUSY')">{status1}</div>
+        <div class="status status2" onclick="setStatus('WORKING')">{status2}</div>
+        <div class="status status3" onclick="setStatus('AVAILABLE')">{status3}</div>
+    </div>
+</script>
+<script type="text/template" id="remote-tpl">
+    <div class="row-container remote" data-name="{name}" data-status="UNKNOWN"> 
+        <div class="title">{title}</div>
+        <div class="status status1">{status1}</div>
+        <div class="status status2">{status2}</div>
+        <div class="status status3">{status3}</div>
+    </div>
+</script>
+    <div class="column-container">
+        <div id="connection-area">
 
-    <div class="container">
-
-        <div class="col status">
-            <div class="status-title">{name}</div>
-            <div class="status-btn avail">Available</div>
-            <div class="status-btn working">Working</div>
-            <div class="status-btn busy">Busy</div>
         </div>
-        <div class="col">
-            <div class="status-title">{name}</div>
-            <div class="status-btn avail">Available</div>
-            <div class="status-btn working">Working</div>
-            <div class="status-btn busy">Busy</div>
+        <div class="right-row-container"> 
+            <div class="clock">clock</div>
+            <div class="iframe">
+                <iframe src="about:blank" id="iframe" allowtransparency=true></iframe>
+            </div>
         </div>
-        <div class="col">
-            <div class="status-title">{name}</div>
-            <div class="status-btn avail">Available</div>
-            <div class="status-btn working">Working</div>
-            <div class="status-btn busy">Busy</div>
-        </div>
-        <div class="col">
-            <div class="status-title">{name}</div>
-            <div class="status-btn avail">Available</div>
-            <div class="status-btn working">Working</div>
-            <div class="status-btn busy">Busy</div>
-        </div>
+        
     </div>
 </body>
 </html>

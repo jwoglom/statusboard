@@ -4,6 +4,11 @@ from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
 from users import init_user, user_response, user_set_status, user_checkin, all_statuses
 
+try:
+    from config import IFRAME_URL
+except ImportError:
+    IFRAME_URL = None
+
 app = Flask(__name__)
 socketio = SocketIO(app)
 
@@ -20,7 +25,7 @@ def init_message(message):
     print('init message:', message)
 
     init_user(message['self_name'], message['conn_names'].split(','))
-    emit('init_response', {})
+    emit('init_response', {'iframe_url': IFRAME_URL})
 
 @socketio.on('update')
 def update_message(message):
