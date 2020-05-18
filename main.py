@@ -21,7 +21,13 @@ cors_origins = '*'
 if os.getenv('CORS_ALLOWED_ORIGINS'):
     cors_origins = os.getenv('CORS_ALLOWED_ORIGINS').split(',')
 
-print('CORS origins:', cors_origins)
+# Log messages with Gunicorn
+if not app.debug:
+    import logging
+    app.logger.addHandler(logging.StreamHandler())
+    app.logger.setLevel(logging.INFO)
+
+app.logger.info('CORS origins:', cors_origins)
 socketio = SocketIO(app, cors_allowed_origins=cors_origins)
 
 @app.route('/<path:names>')
