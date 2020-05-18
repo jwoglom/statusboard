@@ -27,7 +27,7 @@ if not app.debug:
     app.logger.addHandler(logging.StreamHandler())
     app.logger.setLevel(logging.INFO)
 
-app.logger.info('CORS origins:', cors_origins)
+app.logger.info('CORS origins: %s', cors_origins)
 socketio = SocketIO(app, cors_allowed_origins=cors_origins)
 
 @app.route('/<path:names>')
