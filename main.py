@@ -21,6 +21,7 @@ cors_origins = '*'
 if os.getenv('CORS_ALLOWED_ORIGINS'):
     cors_origins = os.getenv('CORS_ALLOWED_ORIGINS').split(',')
 
+print('CORS origins:', cors_origins)
 socketio = SocketIO(app, cors_allowed_origins=cors_origins)
 
 @app.route('/<path:names>')

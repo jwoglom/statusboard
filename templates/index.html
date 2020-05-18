@@ -11,7 +11,7 @@
         selfInfo = {
             self_name: selfName,
             conn_names: document.body.getAttribute('data-conn-names'),
-            query_info: window.location.query.substr(1)
+            query_info: window.location.search.substr(1)
         };
         socket = io();
         socket.on('connect', function() {
