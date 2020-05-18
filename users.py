@@ -20,7 +20,7 @@ class User:
         return UNKNOWN
 
     def __str__(self):
-        return f"User {self.name}"
+        return "User {}".format(self.name)
 
 # Finds a user in the global users dictionary
 def find_user(name):
