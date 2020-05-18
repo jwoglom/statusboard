@@ -8,5 +8,7 @@ verify_ssl = true
 [packages]
 flask-socketio = "*"
 flask = "*"
+gunicorn = {extras = ["eventlet"],version = "*"}
+eventlet = "*"
 
 [requires]
