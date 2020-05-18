@@ -16,7 +16,11 @@ app = Flask(__name__)
 if os.getenv('APPLICATION_ROOT'):
     app.config['APPLICATION_ROOT'] = os.getenv('APPLICATION_ROOT')
 
-socketio = SocketIO(app)
+cors_origins = '*'
+if os.getenv('CORS_ALLOWED_ORIGINS'):
+    cors_origins = os.getenv('CORS_ALLOWED_ORIGINS').split(',')
+
+socketio = SocketIO(app, cors_allowed_origins=cors_origins)
 
 @app.route('/<path:names>')
 def index(names):
