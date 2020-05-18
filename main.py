@@ -7,9 +7,10 @@ from flask_socketio import SocketIO, emit
 from users import init_user, user_response, user_set_status, user_checkin, all_statuses
 
 try:
-    from config import IFRAME_URL
+    from config import custom_init_response
 except ImportError:
-    IFRAME_URL = None
+    def custom_init_response(message):
+        return {}
 
 app = Flask(__name__)
 
@@ -29,13 +30,12 @@ def index(names):
     conn_names = ",".join(filter(None, name_split[1:]))
     return render_template('index.html', self_name=self_name, conn_names=conn_names)
 
-
 @socketio.on('init')
 def init_message(message):
     print('init message:', message)
 
     init_user(message['self_name'], message['conn_names'].split(','))
-    emit('init_response', {'iframe_url': IFRAME_URL})
+    emit('init_response', custom_init_response(message))
 
 @socketio.on('update')
 def update_message(message):

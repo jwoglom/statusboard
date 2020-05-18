@@ -10,7 +10,8 @@
         selfName = document.body.getAttribute('data-self-name');
         selfInfo = {
             self_name: selfName,
-            conn_names: document.body.getAttribute('data-conn-names')
+            conn_names: document.body.getAttribute('data-conn-names'),
+            query_info: window.location.query.substr(1)
         };
         socket = io();
         socket.on('connect', function() {
