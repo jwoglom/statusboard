@@ -29,6 +29,7 @@
     }
 
     function initConnNames() {
+        /*
         var names = document.body.getAttribute('data-conn-names').split(',');
         for (var i=0; i<names.length; i++) {
             var e = document.createElement('p');
@@ -36,13 +37,16 @@
             e.innerHTML = names[i] + ' status LOADING';
             document.body.appendChild(e);
         }
+        */
     }
 
     function updateName(name, status) {
         console.log('updateName', name, status);
+        /*
         var e = document.querySelector('[data-name="' + name + '"]');
         if (!e) return;
         e.innerHTML = name + ' status ' + status;
+        */
     }
 
     var curStatus = "UNKNOWN";
@@ -60,13 +64,68 @@
     window.onload = function() {
         initSocket();
         initConnNames();
+        setInterval(checkin, 20 * 1000);
     }
     </script>
+    <style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+.container {
+    height: 100vh;
+    width: 100vw;
+    display: table;
+}
+
+.col {
+    display: table-cell;
+    height: 100vh;
+    width: auto;
+    margin: 0;
+    padding: 0;
+}
+
+.col .status-btn {
+    height: 30vh;
+}
+    </style>
 </head>
 <body data-self-name="{{ self_name }}" data-conn-names="{{ conn_names }}">
+    <!--
     <button onclick="setStatus('AVAILABLE')">set status AVAILABLE</button>
     <button onclick="setStatus('BUSY')">set status BUSY</button>
     <p></p>
+    -->
+
+    <div class="container">
+
+        <div class="col status">
+            <div class="status-title">{name}</div>
+            <div class="status-btn avail">Available</div>
+            <div class="status-btn working">Working</div>
+            <div class="status-btn busy">Busy</div>
+        </div>
+        <div class="col">
+            <div class="status-title">{name}</div>
+            <div class="status-btn avail">Available</div>
+            <div class="status-btn working">Working</div>
+            <div class="status-btn busy">Busy</div>
+        </div>
+        <div class="col">
+            <div class="status-title">{name}</div>
+            <div class="status-btn avail">Available</div>
+            <div class="status-btn working">Working</div>
+            <div class="status-btn busy">Busy</div>
+        </div>
+        <div class="col">
+            <div class="status-title">{name}</div>
+            <div class="status-btn avail">Available</div>
+            <div class="status-btn working">Working</div>
+            <div class="status-btn busy">Busy</div>
+        </div>
+    </div>
 </body>
 </html>
 
