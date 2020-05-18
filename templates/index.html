@@ -90,6 +90,11 @@
         initSocket();
         initConnNames();
         setInterval(checkin, 20 * 1000);
+        setInterval(function() {
+            var time = new Date().toLocaleTimeString();
+            var noseconds = time.split(':')[0] + ':' + time.split(':')[1] + ' ' + time.split(' ')[1];
+            document.querySelector('.clock').innerHTML = noseconds;
+        }, 1000);
     }
     </script>
     <style>
@@ -166,6 +171,10 @@ body {
 
 .row-container[data-status="AVAILABLE"] .status3 {
     opacity: 1;
+}
+
+.clock {
+    font-size: 6em;
 }
 
 #iframe {
