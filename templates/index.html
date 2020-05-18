@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+<head>
+    <title>Statusboard</title>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+
+    <script type="text/javascript">
+    var socket, selfInfo;
+    function initSocket() {
+        selfInfo = {
+            self_name: document.body.getAttribute('data-self-name'),
+            conn_names: document.body.getAttribute('data-conn-names')
+        };
+        socket = io();
+        socket.on('connect', function() {
+            socket.emit('init', selfInfo);
+        });
+        socket.on('init_response', function() {
+            socket.emit('update', selfInfo);
+        })
+        socket.on('response', function(data) {
+            console.log(data);
+            Object.keys(data['statuses']).forEach(function(e) {
+                console.log(e, data['statuses'][e]);
+                updateName(e, data['statuses'][e]);
+            })
+
+        });
+    }
+
+    function initConnNames() {
+        var names = document.body.getAttribute('data-conn-names').split(',');
+        for (var i=0; i<names.length; i++) {
+            var e = document.createElement('p');
+            e.setAttribute('data-name', names[i]);
+            e.innerHTML = names[i] + ' status LOADING';
+            document.body.appendChild(e);
+        }
+    }
+
+    function updateName(name, status) {
+        console.log('updateName', name, status);
+        var e = document.querySelector('[data-name="' + name + '"]');
+        if (!e) return;
+        e.innerHTML = name + ' status ' + status;
+    }
+
+    var curStatus = "UNKNOWN";
+    function setStatus(status) {
+        var dict = Object.assign({}, selfInfo);
+        curStatus = status;
+        dict['status'] = status;
+        socket.emit('set_status', dict);
+    }
+
+    function checkin() {
+        socket.emit('checkin', selfInfo);
+    }
+
+    window.onload = function() {
+        initSocket();
+        initConnNames();
+    }
+    </script>
+</head>
+<body data-self-name="{{ self_name }}" data-conn-names="{{ conn_names }}">
+    <button onclick="setStatus('AVAILABLE')">set status AVAILABLE</button>
+    <button onclick="setStatus('BUSY')">set status BUSY</button>
+    <p></p>
+</body>
+</html>
+
+
