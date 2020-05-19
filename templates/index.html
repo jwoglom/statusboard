@@ -43,17 +43,18 @@
     </style>
 
     <script type="text/javascript">
-    var socket, selfInfo, selfName, serverConfig;
+    var socket, selfInfo, selfName, serverConfig, localConfig;
     function initSocket() {
         selfName = document.body.getAttribute('data-self-name');
         selfInfo = {
             self_name: selfName,
-            conn_names: document.body.getAttribute('data-conn-names'),
-            query_info: window.location.search.substr(1)
+            conn_names: document.body.getAttribute('data-conn-names')
         };
         socket = io();
         socket.on('connect', function() {
-            socket.emit('init', selfInfo);
+            var data = Object.assign({}, selfInfo);
+            data['local_config'] = localConfig;
+            socket.emit('init', data);
         });
         socket.on('init_response', function(config) {
             serverConfig = config;
@@ -100,9 +101,14 @@
 
     function initConnNames() {
         var names = document.body.getAttribute('data-conn-names').split(',');
-        addColumn('self', selfName);
+        if (!localConfig['flipped']) {
+            addColumn('self', selfName);
+        }
         for (var i=0; i<names.length; i++) {
             addColumn('remote', names[i]);
+        }
+        if (localConfig['flipped']) {
+            addColumn('self', selfName);
         }
     }
 
@@ -151,13 +157,14 @@
 
     function addColumn(type, name) {
         var data = {
+            "type": type,
             "name": name,
             "title": name.charAt(0).toUpperCase() + name.substr(1, name.length),
             "statuses": renderStatusData(name)
         };
 
         var area = document.getElementById('connection-area');
-        area.insertAdjacentHTML('beforeend', render(type + "-tpl", data));
+        area.insertAdjacentHTML('beforeend', render('row-tpl', data));
     }
 
     function statusClick(ths) {
@@ -170,15 +177,34 @@
         setStatus(name, status);
     }
 
-    window.onload = function() {
-        initSocket();
-        initConnNames();
-        setInterval(checkin, 20 * 1000);
+    function initClock() {
         setInterval(function() {
             var time = new Date().toLocaleTimeString();
             var noseconds = time.split(':')[0] + ':' + time.split(':')[1] + ' ' + time.split(' ')[1];
             document.querySelector('.clock').innerHTML = noseconds;
         }, 1000);
+    }
+
+    function readLocalConfig() {
+        localConfig = {};
+        var query = window.location.search.substr(1);
+        var parts = query.split('&');
+        for (var i=0; i<parts.length; i++) {
+            var kv = parts[i].split('=');
+            if (kv.length == 2) {
+                localConfig[kv[0]] = kv[1];
+            } else {
+                localConfig[kv[0]] = true;
+            }
+        }
+    }
+
+    window.onload = function() {
+        readLocalConfig();
+        initSocket();
+        initConnNames();
+        setInterval(checkin, 20 * 1000);
+        initClock();
     }
     </script>
     <style>
@@ -251,15 +277,18 @@ body {
     }
 }
 
-.row-container .status {
+.row-container .status,
+.row-container .title {
     cursor: pointer;
 }
 
-body[data-accesscontrol] .row-container .status {
+body[data-accesscontrol] .row-container .status,
+body[data-accesscontrol] .row-container .title {
     cursor: inherit;
 }
 
-body[data-accesscontrol] .row-container.self .status {
+body[data-accesscontrol] .row-container.self .status,
+body[data-accesscontrol] .row-container.self .title {
     cursor: pointer;
 }
     </style>
@@ -270,21 +299,15 @@ body[data-accesscontrol] .row-container.self .status {
     <button onclick="setStatus('BUSY')">set status BUSY</button>
     <p></p>
     -->
-<script type="text/template" id="self-tpl">
-    <div class="row-container self" data-self="true" data-name="{name}" data-status="UNKNOWN"> 
-        <div class="title">{title}</div>
+<script type="text/template" id="row-tpl">
+    <div class="row-container {type}" data-name="{name}" data-status="UNKNOWN"> 
+        <div class="title" data-name="{name}" data-status="UNKNOWN" onclick="statusClick(this)">{title}</div>
         {statuses}
     </div>
 </script>
 <script type="text/template" id="status-tpl">
     <div class="status" data-name="{name}" data-status="{code}" data-show="{show}" data-blink="{blink}" onclick="statusClick(this)">
         {display}
-    </div>
-</script>
-<script type="text/template" id="remote-tpl">
-    <div class="row-container remote" data-name="{name}" data-status="UNKNOWN"> 
-        <div class="title">{title}</div>
-        {statuses}
     </div>
 </script>
 <script type="text/template" id="iframe-tpl">
