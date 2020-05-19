@@ -79,6 +79,7 @@
             rows = clock_height + ' ';
         }
         var area = document.querySelector('#iframe-area');
+        area.innerHTML = '';
         Object.keys(iframes).forEach(function(key) {
             area.insertAdjacentHTML('beforeend', render('iframe-tpl', iframes[key]));
             if (iframes[key]['height']) {
@@ -238,7 +239,7 @@ body {
 }
 */
 .clock {
-    font-size: 6em;
+    font-size: 6vw;
 }
 
 .iframe > iframe {
