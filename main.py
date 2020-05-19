@@ -2,7 +2,7 @@
 
 import os
 
-from flask import Flask, render_template
+from flask import Flask, render_template, request, make_response, send_from_directory
 from flask_socketio import SocketIO, emit
 from users import init_user, user_response, user_set_status, user_checkin, all_statuses
 
@@ -12,7 +12,7 @@ except ImportError:
     def custom_init_response(message):
         return {}
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
 
 if os.getenv('APPLICATION_ROOT'):
     app.config['APPLICATION_ROOT'] = os.getenv('APPLICATION_ROOT')
@@ -30,12 +30,35 @@ if not app.debug:
 app.logger.info('CORS origins: %s', cors_origins)
 socketio = SocketIO(app, cors_allowed_origins=cors_origins)
 
-@app.route('/<path:names>')
-def index(names):
+def parse_names(names):
     name_split = names.split('/')
     self_name = name_split[0]
     conn_names = ",".join(filter(None, name_split[1:]))
-    return render_template('index.html', self_name=self_name, conn_names=conn_names)
+    return self_name, conn_names
+
+@app.route('/<path:names>')
+def index(names):
+    self_name, conn_names = parse_names(names)
+    return render_template('index.html',
+        self_name=self_name,
+        conn_names=conn_names,
+        path=names)
+
+@app.route('/manifest.json')
+def manifest():
+    names = request.query_string.decode()
+    self_name, _ = parse_names(names)
+
+    r = make_response(render_template('manifest.json',
+        self_title=self_name.title(),
+        path=names))
+
+    r.headers.set('Content-Type', 'text/json')
+    return r
+
+@app.route('/static/<path:path>')
+def static_path(path):
+    return send_from_directory('static', path)
 
 @socketio.on('init')
 def init_message(message):
