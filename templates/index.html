@@ -2,6 +2,9 @@
 <html>
 <head>
     <title>Statusboard</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" /> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
 
     <script type="text/javascript">
@@ -96,6 +99,9 @@
             var noseconds = time.split(':')[0] + ':' + time.split(':')[1] + ' ' + time.split(' ')[1];
             document.querySelector('.clock').innerHTML = noseconds;
         }, 1000);
+
+        // hide address bar on Android
+        setTimeout(function() { window.scrollTo(0, 1); }, 1);
     }
     </script>
     <style>
