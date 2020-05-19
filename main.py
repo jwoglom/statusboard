@@ -5,6 +5,7 @@ import os
 from flask import Flask, render_template, request, make_response, send_from_directory
 from flask_socketio import SocketIO, emit
 from users import init_user, user_response, user_set_status, user_checkin, all_statuses
+from statuses import get_statuses, get_visible_count
 
 try:
     from config import custom_init_response
@@ -42,7 +43,9 @@ def index(names):
     return render_template('index.html',
         self_name=self_name,
         conn_names=conn_names,
-        path=names)
+        path=names,
+        statuses=get_statuses(),
+        statuses_rows=get_visible_count())
 
 @app.route('/manifest.json')
 def manifest():

@@ -11,6 +11,38 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
 
     <script type="text/javascript">
+    var statusData = [
+        {% for status in statuses %}
+        {
+            "code": "{{status.code}}",
+            "display": "{{status.display}}",
+            "show": "{{status.show}}",
+            "blink": "{{status.blink}}"
+        },
+        {% endfor %}
+    ];
+    </script>
+    <style type="text/css">
+    {% for status in statuses %}
+        .status[data-status="{{status.code}}"] {
+            background: {{status.color}};
+        }
+
+        .row-container[data-status="{{status.code}}"] .status[data-status="{{status.code}}"] {
+            opacity: 1;
+        }
+
+        .row-container[data-status="{{status.code}}"] .status[data-status="{{status.code}}"][data-blink="True"] {
+            animation: opacity_blink 2s infinite;
+            -webkit-animation: opacity_blink 2s infinite;
+        }
+    {% endfor %}
+    .row-container {
+        grid-template-rows: 0.25fr repeat({{statuses_rows}}, 1fr);
+    }
+    </style>
+
+    <script type="text/javascript">
     var socket, selfInfo, selfName;
     function initSocket() {
         selfName = document.body.getAttribute('data-self-name');
@@ -24,8 +56,8 @@
             socket.emit('init', selfInfo);
         });
         socket.on('init_response', function(config) {
-            if (config['iframe_url']) {
-                document.querySelector('#iframe').setAttribute('src', config['iframe_url']);
+            if (config['iframes']) {
+                addIframes(config['iframes'], config['clock_height']);   
             }
             socket.emit('update', selfInfo);
         })
@@ -39,6 +71,24 @@
                 updateName(e, data['statuses'][e]);
             })
         });
+    }
+
+    function addIframes(iframes, clock_height) {
+        var rows = '1fr ';
+        if (clock_height) {
+            rows = clock_height + ' ';
+        }
+        var area = document.querySelector('#iframe-area');
+        Object.keys(iframes).forEach(function(key) {
+            area.insertAdjacentHTML('beforeend', render('iframe-tpl', iframes[key]));
+            if (iframes[key]['height']) {
+                rows += iframes[key]['height'] + ' ';
+            } else {
+                rows += '1fr ';
+            }
+        });
+
+        document.querySelector('.right-row-container').style.gridTemplateRows = rows;
     }
 
     function initConnNames() {
@@ -80,13 +130,19 @@
         return tpl;
     }
 
+    function renderStatusData() {
+        var html = "";
+        statusData.forEach(function(st) {
+            html += render('status-tpl', st);
+        });
+        return html;
+    }
+
     function addColumn(type, name) {
         var data = {
             "name": name,
             "title": name.charAt(0).toUpperCase() + name.substr(1, name.length),
-            "status1": "Busy",
-            "status2": "Working",
-            "status3": "Available"
+            "statuses": renderStatusData()
         };
 
         var area = document.getElementById('connection-area');
@@ -126,14 +182,15 @@ body {
 .row-container {
     display: grid;
     grid-template-columns: 1fr;
-    grid-template-rows: 0.25fr repeat(3, 1fr);
+    /* grid-template-rows: 0.25fr repeat(3, 1fr); */
     height: 100vh;
 }
 
 .right-row-container {
     display: grid;
     grid-template-columns: 1fr;
-    grid-template-rows: repeat(2, 1fr);
+    /* grid-template-rows: repeat(2, 1fr); */
+    grid-template-rows: 1fr;
     height: 100vh;
 }
 
@@ -144,14 +201,14 @@ body {
     align-items: center;
 }
 
-#connection-area {
+#connection-area, #iframe-area {
     display: contents;
 }
 
 .row-container.self .status {
     cursor: pointer;
 }
-
+/*
 .status1 {
     background: #930000;
 }
@@ -163,11 +220,11 @@ body {
 .status3 {
     background: #007600;
 }
-
+*/
 .row-container .status {
     opacity: 0.4;
 }
-
+/*
 .row-container[data-status="BUSY"] .status1 {
     opacity: 1;
 }
@@ -179,18 +236,26 @@ body {
 .row-container[data-status="AVAILABLE"] .status3 {
     opacity: 1;
 }
-
+*/
 .clock {
     font-size: 6em;
 }
 
-#iframe {
+.iframe > iframe {
     border: 0;
     background: transparent;
     width: 100%;
     height: 100%;
 }
 
+@keyframes opacity_blink {
+    0%, 49% {
+        opacity: 1;
+    }
+    50%, 100% {
+        opacity: 0.4;
+    }
+}
     </style>
 </head>
 <body data-self-name="{{ self_name }}" data-conn-names="{{ conn_names }}">
@@ -202,17 +267,23 @@ body {
 <script type="text/template" id="self-tpl">
     <div class="row-container self" data-self="true" data-name="{name}" data-status="UNKNOWN"> 
         <div class="title">{title}</div>
-        <div class="status status1" onclick="setStatus('BUSY')">{status1}</div>
-        <div class="status status2" onclick="setStatus('WORKING')">{status2}</div>
-        <div class="status status3" onclick="setStatus('AVAILABLE')">{status3}</div>
+        {statuses}
+    </div>
+</script>
+<script type="text/template" id="status-tpl">
+    <div class="status" data-status="{code}" data-show="{show}" data-blink="{blink}" onclick="setStatus('{code}')">
+        {display}
     </div>
 </script>
 <script type="text/template" id="remote-tpl">
     <div class="row-container remote" data-name="{name}" data-status="UNKNOWN"> 
         <div class="title">{title}</div>
-        <div class="status status1">{status1}</div>
-        <div class="status status2">{status2}</div>
-        <div class="status status3">{status3}</div>
+        {statuses}
+    </div>
+</script>
+<script type="text/template" id="iframe-tpl">
+    <div class="iframe">
+        <iframe src="{url}" id="iframe_{name}" allowtransparency=true></iframe>
     </div>
 </script>
     <div class="column-container">
@@ -221,8 +292,8 @@ body {
         </div>
         <div class="right-row-container"> 
             <div class="clock">clock</div>
-            <div class="iframe">
-                <iframe src="about:blank" id="iframe" allowtransparency=true></iframe>
+            <div id="iframe-area">
+
             </div>
         </div>
         
