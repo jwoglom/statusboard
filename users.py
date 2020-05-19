@@ -73,6 +73,9 @@ def all_statuses():
 # Sets the status of a user
 def user_set_status(name, status):
     usr = find_user(name)
+    if not usr:
+        init_user(name, None)
+        usr = find_user(name)
     usr.status = status
     usr.last_conn_time = time.time()
 

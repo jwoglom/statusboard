@@ -43,7 +43,7 @@
     </style>
 
     <script type="text/javascript">
-    var socket, selfInfo, selfName;
+    var socket, selfInfo, selfName, serverConfig;
     function initSocket() {
         selfName = document.body.getAttribute('data-self-name');
         selfInfo = {
@@ -56,15 +56,21 @@
             socket.emit('init', selfInfo);
         });
         socket.on('init_response', function(config) {
+            serverConfig = config;
             if (config['iframes']) {
                 addIframes(config['iframes'], config['clock_height']);   
+            }
+            if (config['accesscontrol']) {
+                document.body.setAttribute('data-accesscontrol','on');
+            } else {
+                document.body.removeAttribute('data-accesscontrol');
             }
             socket.emit('update', selfInfo);
         })
         socket.on('response', function(data) {
             console.log('response:', data);
             if (data['self_status'] && curStatus == "INITIALIZING") {
-                setStatus(data['self_status']);
+                setStatus(selfName, data['self_status']);
             }
             Object.keys(data['statuses']).forEach(function(e) {
                 console.log('update:', e, data['statuses'][e]);
@@ -109,12 +115,15 @@
     }
 
     var curStatus = "INITIALIZING";
-    function setStatus(status) {
-        var dict = Object.assign({}, selfInfo);
-        curStatus = status;
-        dict['status'] = status;
-        socket.emit('set_status', dict);
-        updateName(selfName, status);
+    function setStatus(name, status) {
+        if (name == selfName) {
+            curStatus = status;
+        }
+        socket.emit('set_status', {
+            'self_name': name,
+            'status': status
+        });
+        updateName(name, status);
     }
 
     function checkin() {
@@ -131,9 +140,10 @@
         return tpl;
     }
 
-    function renderStatusData() {
+    function renderStatusData(name) {
         var html = "";
         statusData.forEach(function(st) {
+            if (st) st['name'] = name;
             html += render('status-tpl', st);
         });
         return html;
@@ -143,11 +153,21 @@
         var data = {
             "name": name,
             "title": name.charAt(0).toUpperCase() + name.substr(1, name.length),
-            "statuses": renderStatusData()
+            "statuses": renderStatusData(name)
         };
 
         var area = document.getElementById('connection-area');
         area.insertAdjacentHTML('beforeend', render(type + "-tpl", data));
+    }
+
+    function statusClick(ths) {
+        ths = ths || this;
+        var name = ths.getAttribute('data-name');
+        var status = ths.getAttribute('data-status');
+        if (serverConfig['accesscontrol'] && name != selfName) {
+            return;
+        }
+        setStatus(name, status);
     }
 
     window.onload = function() {
@@ -206,38 +226,10 @@ body {
     display: contents;
 }
 
-.row-container.self .status {
-    cursor: pointer;
-}
-/*
-.status1 {
-    background: #930000;
-}
-
-.status2 {
-    background: #c07c00;
-}
-
-.status3 {
-    background: #007600;
-}
-*/
 .row-container .status {
     opacity: 0.4;
 }
-/*
-.row-container[data-status="BUSY"] .status1 {
-    opacity: 1;
-}
 
-.row-container[data-status="WORKING"] .status2 {
-    opacity: 1;
-}
-
-.row-container[data-status="AVAILABLE"] .status3 {
-    opacity: 1;
-}
-*/
 .clock {
     font-size: 6vw;
 }
@@ -258,6 +250,18 @@ body {
         opacity: 0.4;
     }
 }
+
+.row-container .status {
+    cursor: pointer;
+}
+
+body[data-accesscontrol] .row-container .status {
+    cursor: inherit;
+}
+
+body[data-accesscontrol] .row-container.self .status {
+    cursor: pointer;
+}
     </style>
 </head>
 <body data-self-name="{{ self_name }}" data-conn-names="{{ conn_names }}">
@@ -273,7 +277,7 @@ body {
     </div>
 </script>
 <script type="text/template" id="status-tpl">
-    <div class="status" data-status="{code}" data-show="{show}" data-blink="{blink}" onclick="setStatus('{code}')">
+    <div class="status" data-name="{name}" data-status="{code}" data-show="{show}" data-blink="{blink}" onclick="statusClick(this)">
         {display}
     </div>
 </script>
