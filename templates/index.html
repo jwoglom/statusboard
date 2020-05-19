@@ -247,6 +247,7 @@ body {
     background: transparent;
     width: 100%;
     height: 100%;
+    overflow: hidden;
 }
 
 @keyframes opacity_blink {
@@ -284,7 +285,7 @@ body {
 </script>
 <script type="text/template" id="iframe-tpl">
     <div class="iframe">
-        <iframe src="{url}" id="iframe_{name}" allowtransparency=true></iframe>
+        <iframe src="{url}" id="iframe_{name}" allowtransparency=true scrolling=no></iframe>
     </div>
 </script>
     <div class="column-container">
