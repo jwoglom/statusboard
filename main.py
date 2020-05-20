@@ -4,14 +4,20 @@ import os
 
 from flask import Flask, render_template, request, make_response, send_from_directory
 from flask_socketio import SocketIO, emit
-from users import init_user, user_response, user_set_status, user_checkin, all_statuses
-from statuses import get_statuses, get_visible_count
 
+from users import init_user, user_response, user_set_status, user_checkin, all_statuses
+from statuses import get_statuses, get_visible_count, set_custom_statuses
+
+# To specify custom configurations, look at config_sample.py
 try:
-    from config import custom_init_response
+    from config import custom_init_response, custom_statuses
 except ImportError:
     def custom_init_response(message):
         return {}
+    
+    custom_statuses = None
+
+set_custom_statuses(custom_statuses)
 
 app = Flask(__name__, static_url_path='/static')
 
@@ -83,8 +89,8 @@ def set_status_message(message):
 
 @socketio.on('checkin')
 def checkin_message(message):
-    print('checkin message:', message)
-    user_checkin(message['self_name'])
+    time_diff = user_checkin(message['self_name'])
+    print('checkin message:', message, 'elapsed: %.2f sec' % time_diff)
 
 if __name__ == '__main__':
     socketio.run(app)

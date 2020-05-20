@@ -3,6 +3,8 @@ import time
 users = {}
 
 UNKNOWN = 'UNKNOWN'
+
+# After 30 seconds without a checkin ping, a user's status will be discarded.
 ACTIVE_SECONDS = 30
 
 def _connected_time_ok(last_conn_time):
@@ -64,9 +66,9 @@ def _statuses_for_users(users):
 def user_response(name):
     usr = find_user(name)
     statuses = _statuses_for_users(usr.connected_to)
-    return {'statuses': statuses, 'self_status': usr.status, 'msg_type': 'local'}
+    return {'statuses': statuses, 'self_status': usr.get_status(), 'msg_type': 'local'}
 
-# Returns all statuses for active users
+# Returns all statuses for active users. This is broadcasted to all users.
 def all_statuses():
     return {'statuses': _statuses_for_users(all_active_users()), 'msg_type': 'global'}
 
@@ -82,4 +84,9 @@ def user_set_status(name, status):
 # Updates the last connection time
 def user_checkin(name):
     usr = find_user(name)
-    usr.last_conn_time = time.time()
+
+    new_time = time.time()
+    old_time = usr.last_conn_time
+    
+    usr.last_conn_time = new_time
+    return new_time - old_time
