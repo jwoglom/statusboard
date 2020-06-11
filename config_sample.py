@@ -11,22 +11,32 @@ WEATHER_URL = image_display('https://wttr.in/.png?2nF')
 def custom_init_response(message):
     config = message['local_config'] if 'local_config' in message else {}
     data = {
-        'iframes': [],
+        'side_iframes': [],
         # set to True if you only want a person to be able to control their status only on
         # their own board; otherwise, you can control anyone's status you are following.
         'accesscontrol': False
     }
 
-    data['iframes'].append({
+    data['side_iframes'].append({
         'name': 'weather',
         'url': WEATHER_URL,
         'height': '1.5fr'
     })
 
-    # you can add additional iframes by appending to data['iframes'],
+    # you can add additional side iframes by appending to data['side_iframes'],
     # and also do so conditionally based on query parameters (i.e.,
     # with URL http://statusboard/you/friend?foo&bar=baz, config['foo']
     # would be set to true and config['bar'] would be "baz".
+
+    # One-column mode only shows the current status of each user, and requires you to
+    # click in order to change the status to something else. If set, you can use the
+    # reclaimed space underneath the status area for a main iframe. For example:
+
+    if 'full_iframe' in config:
+        data['onecol'] = True
+        data['main_iframe'] = {
+            'url': 'http://theoldpurple.com'
+        }
 
     return data
 

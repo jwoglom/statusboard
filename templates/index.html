@@ -97,6 +97,11 @@
             } else {
                 document.body.removeAttribute('data-onecol');
             }
+
+            if (config['main_iframe']) {
+                addMainIframe(config['main_iframe']);
+            }
+
             socket.emit('update', selfInfo);
         })
         socket.on('response', function(data) {
@@ -128,6 +133,10 @@
         });
 
         document.querySelector('.right-row-container').style.gridTemplateRows = rows;
+    }
+
+    function addMainiframe(iframe) {
+        var area = document.querySelector('#main-iframe-area');
     }
 
     function initConnNames() {
@@ -298,7 +307,7 @@ body {
     align-items: center;
 }
 
-#connection-area, #side-iframe-area {
+#connection-area, #main-area, #side-iframe-area, #main-iframe-area {
     display: contents;
 }
 
@@ -366,8 +375,12 @@ body[data-accesscontrol] .row-container.self .title {
     </div>
 </script>
     <div class="column-container">
-        <div id="connection-area">
+        <div id="main-area">
+            <div id="connection-area">
 
+            </div>
+            <div id="main-iframe-area">
+            </div>
         </div>
         <div class="right-row-container"> 
             <div class="clock">clock</div>
