@@ -289,11 +289,34 @@
         }
     }
 
+    function requestFullscreen(el) {
+        if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+        if (el.mozRequestFullScreen) el.mozRequestFullScreen();
+        if (el.msRequestFullscreen) el.msRequestFullscreen();
+        if (el.requestFullscreen) el.requestFullscreen();
+    }
+
     window.onload = function() {
         readLocalConfig();
         initSocket();
         setInterval(checkin, 20 * 1000);
         initClock();
+
+        if (localConfig['reload']) { // minutes
+            setTimeout(function() { window.location.reload(); }, 60 * 1000 * parseInt(localConfig['reload']));
+        }
+
+        if (localConfig['fullscreen']) {
+            requestFullscreen(document.documentElement);
+            document.documentElement.onclick = function() {
+                requestFullscreen(document.documentElement);
+            }
+        }
+
+        document.querySelector(".clock").ondblclick = function() {
+            window.location.reload();
+        }
+
     }
     </script>
     <style>

@@ -12,6 +12,7 @@ from statuses import get_statuses, get_visible_count, set_custom_statuses, get_u
 try:
     from config import custom_init_response, custom_statuses
 except ImportError:
+    print('Failed to load custom config')
     def custom_init_response(message):
         return {}
     
