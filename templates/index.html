@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="mobile-web-app-capable" content="yes" />
     <link rel="manifest" href="/manifest.json?{{path}}" />
-    <link rel="icon" type="image/png" href="/sttaic/icon.png" />
-    <link rel="shortcut icon" type="image/png" href="/sttaic/icon.png" />
+    <link rel="icon" type="image/png" href="/static/icon.png" />
+    <link rel="shortcut icon" type="image/png" href="/static/icon.png" />
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
 
     <script type="text/javascript">
@@ -21,8 +21,23 @@
         },
         {% endfor %}
     ];
+
+    var unknownStatusData = {
+        "code": "{{unknown_status.code}}",
+        "display": "{{unknown_status.display}}",
+        "show": "{{unknown_status.show}}",
+        "blink": "{{unknown_status.blink}}"
+    };
     </script>
     <style type="text/css">
+    body[data-onecol] .row-container .status {
+        display: none;
+    }
+
+    body[data-onecol] .row-container[data-selecting] .status {
+        display: inherit;
+    }
+
     {% for status in statuses %}
         .status[data-status="{{status.code}}"] {
             background: {{status.color}};
@@ -35,6 +50,10 @@
         .row-container[data-status="{{status.code}}"] .status[data-status="{{status.code}}"][data-blink="True"] {
             animation: opacity_blink 2s infinite;
             -webkit-animation: opacity_blink 2s infinite;
+        }
+
+        body[data-onecol] .row-container[data-status="{{status.code}}"] .status[data-status="{{status.code}}"] {
+            display: inherit;
         }
     {% endfor %}
     .row-container {
@@ -58,13 +77,20 @@
         });
         socket.on('init_response', function(config) {
             serverConfig = config;
-            if (config['iframes']) {
-                addIframes(config['iframes'], config['clock_height']);   
+            if (config['side_iframes']) {
+                addSideIframes(config['side_iframes'], config['clock_height']);   
             }
+
             if (config['accesscontrol']) {
                 document.body.setAttribute('data-accesscontrol','on');
             } else {
                 document.body.removeAttribute('data-accesscontrol');
+            }
+
+            if (config['onecol']) {
+                document.body.setAttribute('data-onecol','on');
+            } else {
+                document.body.removeAttribute('data-onecol');
             }
             socket.emit('update', selfInfo);
         })
@@ -80,12 +106,12 @@
         });
     }
 
-    function addIframes(iframes, clock_height) {
+    function addSideIframes(iframes, clock_height) {
         var rows = '1fr ';
         if (clock_height) {
             rows = clock_height + ' ';
         }
-        var area = document.querySelector('#iframe-area');
+        var area = document.querySelector('#side-iframe-area');
         area.innerHTML = '';
         Object.keys(iframes).forEach(function(key) {
             area.insertAdjacentHTML('beforeend', render('iframe-tpl', iframes[key]));
@@ -152,6 +178,11 @@
             if (st) st['name'] = name;
             html += render('status-tpl', st);
         });
+        if (localConfig['onecol']) {
+            var st = Object.assign({}, unknownStatusData);
+            st['name'] = name;
+            html += render('status-tpl', st);
+        }
         return html;
     }
 
@@ -167,7 +198,7 @@
         area.insertAdjacentHTML('beforeend', render('row-tpl', data));
     }
 
-    function statusClick(ths) {
+    function statusClickSet(ths) {
         ths = ths || this;
         var name = ths.getAttribute('data-name');
         var status = ths.getAttribute('data-status');
@@ -175,6 +206,20 @@
             return;
         }
         setStatus(name, status);
+    }
+
+    function statusClick(ths) {
+        ths = ths || this;
+        if (serverConfig['onecol']) {
+            if (ths.parentElement.hasAttribute('data-selecting')) {
+                ths.parentElement.removeAttribute('data-selecting');
+                return statusClickSet(ths);
+            } else {
+                ths.parentElement.setAttribute('data-selecting', 'on');
+                return;
+            }
+        }
+        return statusClickSet(ths);
     }
 
     function initClock() {
@@ -248,7 +293,7 @@ body {
     align-items: center;
 }
 
-#connection-area, #iframe-area {
+#connection-area, #side-iframe-area {
     display: contents;
 }
 
@@ -301,7 +346,7 @@ body[data-accesscontrol] .row-container.self .title {
     -->
 <script type="text/template" id="row-tpl">
     <div class="row-container {type}" data-name="{name}" data-status="UNKNOWN"> 
-        <div class="title" data-name="{name}" data-status="UNKNOWN" onclick="statusClick(this)">{title}</div>
+        <div class="title" data-name="{name}" data-status="UNKNOWN" onclick="statusClickSet(this)">{title}</div>
         {statuses}
     </div>
 </script>
@@ -321,7 +366,7 @@ body[data-accesscontrol] .row-container.self .title {
         </div>
         <div class="right-row-container"> 
             <div class="clock">clock</div>
-            <div id="iframe-area">
+            <div id="side-iframe-area">
 
             </div>
         </div>

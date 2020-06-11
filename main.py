@@ -6,7 +6,7 @@ from flask import Flask, render_template, request, make_response, send_from_dire
 from flask_socketio import SocketIO, emit
 
 from users import init_user, user_response, user_set_status, user_checkin, all_statuses
-from statuses import get_statuses, get_visible_count, set_custom_statuses
+from statuses import get_statuses, get_visible_count, set_custom_statuses, get_unknown_status
 
 # To specify custom configurations, look at config_sample.py
 try:
@@ -51,6 +51,7 @@ def index(names):
         conn_names=conn_names,
         path=names,
         statuses=get_statuses(),
+        unknown_status=get_unknown_status(),
         statuses_rows=get_visible_count())
 
 @app.route('/manifest.json')

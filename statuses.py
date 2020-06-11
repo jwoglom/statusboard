@@ -37,3 +37,6 @@ def get_statuses():
 def get_visible_count():
     global statuses
     return len(list(filter(lambda s: s.show, statuses)))
+
+def get_unknown_status():
+    return Status("UNKNOWN", "Unknown", "#000000")
