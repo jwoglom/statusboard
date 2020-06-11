@@ -35,7 +35,8 @@ def custom_init_response(message):
     if 'full_iframe' in config:
         data['onecol'] = True
         data['main_iframe'] = {
-            'url': 'http://theoldpurple.com'
+            'name': 'purple',
+            'url': 'http://example.com'
         }
 
     return data
