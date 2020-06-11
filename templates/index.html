@@ -38,7 +38,12 @@
         display: inherit;
     }
 
-    {% for status in statuses %}
+    body[data-onecol] .row-container[data-selecting] .status[data-status="UNKNOWN"],
+    body[data-onecol] .row-container[data-selecting][data-status="UNKNOWN"] .status[data-status="UNKNOWN"] {
+        display: none;
+    }
+
+    {% for status in statuses+[unknown_status] %}
         .status[data-status="{{status.code}}"] {
             background: {{status.color}};
         }

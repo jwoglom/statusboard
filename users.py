@@ -56,7 +56,7 @@ def _statuses_for_users(users):
     statuses = {}
     for c in users:
         cusr = find_user(c)
-        if cusr and _connected_time_ok(cusr.last_conn_time):
+        if cusr and _connected_time_ok(cusr.last_conn_time) and cusr.status:
             statuses[c] = cusr.status
         else:
             statuses[c] = UNKNOWN
