@@ -109,6 +109,8 @@
                 addMainIframe(config['main_iframe']);
             }
 
+            initConnNames();
+
             socket.emit('update', selfInfo);
         })
         socket.on('response', function(data) {
@@ -148,7 +150,13 @@
         area.insertAdjacentHTML('beforeend', render('iframe-tpl', iframe));
     }
 
+    var connNamesSetup = false;
     function initConnNames() {
+        if (connNamesSetup) {
+            console.error('Not resetting conn names');
+            return;
+        }
+        connNamesSetup = true;
         var names = document.body.getAttribute('data-conn-names').split(',');
         if (!localConfig['flipped']) {
             addColumn('self', selfName);
@@ -201,7 +209,7 @@
             if (st) st['name'] = name;
             html += render('status-tpl', st);
         });
-        if (localConfig['onecol']) {
+        if (serverConfig['onecol']) {
             var st = Object.assign({}, unknownStatusData);
             st['name'] = name;
             html += render('status-tpl', st);
@@ -284,7 +292,6 @@
     window.onload = function() {
         readLocalConfig();
         initSocket();
-        initConnNames();
         setInterval(checkin, 20 * 1000);
         initClock();
     }
