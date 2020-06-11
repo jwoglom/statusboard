@@ -52,7 +52,8 @@ def index(names):
         path=names,
         statuses=get_statuses(),
         unknown_status=get_unknown_status(),
-        statuses_rows=get_visible_count())
+        statuses_rows=get_visible_count(),
+        statuses_cols=len(conn_names.split(",")) + 1)
 
 @app.route('/manifest.json')
 def manifest():
