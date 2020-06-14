@@ -16,7 +16,7 @@ A basic setup is quite simple:
    
    **http://statusboard-host/myusername/follower1,follower2**
    
-4. You're done! You can configure custom iframe widgets and other settings (such as _accesscontrol_, which restricts you from changing the status of your followers) in config.py. The following screenshot should be the approximate result:
+4. You're done! You can configure custom iframe widgets and other settings (such as _accesscontrol_, which restricts you from changing the status of your followers) in config.py. The following screenshot should show the result of setting your own username as *james* and followers as *person1* and *person2*:
 
 <img src="https://i.imgur.com/WL7g2V3.png" width=800 />
 
@@ -46,6 +46,10 @@ def custom_init_response(message):
     'accesscontrol': False
   }
 ```
+
+The `onecol` setting changes the UI behavior to display only the current status of each user, rather than showing all of the available statuses and highlighting each user's current status. This allows for a `main_iframe` to be set, which takes up the area underneath the status display.
+
+If `accesscontrol` is set, then you will only be able to change your own status, and the statuses of your followers will be read only to you.
 
 ### Custom Statuses
 
