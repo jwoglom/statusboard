@@ -50,7 +50,7 @@ def index(names):
     return render_template('index.html',
         self_name=self_name,
         conn_names=conn_names,
-        path=names,
+        path='{}?{}'.format(names, request.query_string.decode()),
         statuses=get_statuses(),
         unknown_status=get_unknown_status(),
         statuses_rows=get_visible_count(),
