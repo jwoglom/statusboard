@@ -1,7 +1,7 @@
 # Statusboard
 Statusboard lets you create a customizable signage board, where you can mark your availability alongside roommates or friends. It is ideally suited for use on a small touch-screen tablet which you can set near your workspace, so that it can both let you see whether the other people you're tracking are available or busy, and display things like a clock, your calendar, and the weather which you want to be able to see at a glance.
 
-<img src="https://i.imgur.com/Nra1sex.gif" width=640 />
+<img src="https://i.imgur.com/Nra1sex.gif" width=800 />
 
 
 ## Setup
@@ -18,11 +18,11 @@ A basic setup is quite simple:
    
 4. You're done! You can configure custom iframe widgets and other settings (such as _accesscontrol_, which restricts you from changing the status of your followers) in config.py. The following screenshot should be the approximate result:
 
-<img src="https://i.imgur.com/WL7g2V3.png" />
+<img src="https://i.imgur.com/WL7g2V3.png" width=800 />
 
 ### Custom Configuration
 
-<img src="https://i.imgur.com/meGpfSQ.png" width=640 />
+<img src="https://i.imgur.com/meGpfSQ.png" width=800 />
 
 Create a file *config.py* with the following:
 ```python
