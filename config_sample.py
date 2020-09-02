@@ -36,7 +36,8 @@ def custom_init_response(message):
         data['onecol'] = True
         data['main_iframe'] = {
             'name': 'purple',
-            'url': 'http://example.com'
+            'url': 'http://example.com',
+            'scrolling': 'yes'
         }
 
     return data

@@ -134,6 +134,9 @@
         area.innerHTML = '';
         Object.keys(iframes).forEach(function(key) {
             area.insertAdjacentHTML('beforeend', render('iframe-tpl', iframes[key]));
+            if ('scrolling' in iframes[key]) {
+                document.querySelector('#iframe_' + iframes[key]['name']).setAttribute('scrolling', iframes[key]['scrolling']);
+            }
             if (iframes[key]['height']) {
                 rows += iframes[key]['height'] + ' ';
             } else {
@@ -148,6 +151,9 @@
         var area = document.querySelector('#main-iframe-area');
         area.innerHTML = '';
         area.insertAdjacentHTML('beforeend', render('iframe-tpl', iframe));
+        if ('scrolling' in iframe) {
+            document.querySelector('#iframe_' + iframe['name']).setAttribute('scrolling', iframe['scrolling']);
+        }
     }
 
     var connNamesSetup = false;
