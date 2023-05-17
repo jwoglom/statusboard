@@ -5,9 +5,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes" /> 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <link rel="manifest" href="/manifest.json?{{path}}" />
-    <link rel="icon" type="image/png" href="/static/icon.png" />
-    <link rel="shortcut icon" type="image/png" href="/static/icon.png" />
+    <link rel="manifest" href="{{ROUTE_TOKEN}}/manifest.json?{{path}}" />
+    <link rel="icon" type="image/png" href="{{ROUTE_TOKEN}}/static/icon.png" />
+    <link rel="shortcut icon" type="image/png" href="{{ROUTE_TOKEN}}/static/icon.png" />
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
 
     <script type="text/javascript">
@@ -84,7 +84,7 @@
             self_name: selfName,
             conn_names: document.body.getAttribute('data-conn-names')
         };
-        socket = io();
+        socket = io({path: '{{ROUTE_TOKEN}}/socket.io/'});
         socket.on('connect', function() {
             var data = Object.assign({}, selfInfo);
             data['local_config'] = localConfig;
@@ -126,6 +126,14 @@
                 updateName(e, data['statuses'][e]);
             })
         });
+        socket.on('iframe_sendmessage', function(data) {
+            console.log('iframe_sendmessage', data);
+            var ifr = document.getElementById('iframe_' + data['iframe']);
+            if (!ifr) return;
+            var domain = ifr.src.split('/', 3);
+            domain = domain[0] + '//' + domain[2];
+            ifr.contentWindow.postMessage(JSON.parse(data.message), domain);
+        })
     }
 
     function addSideIframes(iframes, clock_height) {

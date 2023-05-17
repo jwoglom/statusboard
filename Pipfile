@@ -12,3 +12,6 @@ gunicorn = {extras = ["eventlet"],version = "*"}
 eventlet = "*"
 
 [requires]
+
+[scripts]
+app = 'bash -c "FLASK_APP=main.py flask run -p 5001"'

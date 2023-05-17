@@ -20,7 +20,13 @@ except ImportError:
 
 set_custom_statuses(custom_statuses)
 
-app = Flask(__name__, static_url_path='/static')
+ROUTE_TOKEN = ''
+static_url_path = '/static'
+if os.getenv('ROUTE_TOKEN'):
+    ROUTE_TOKEN = '/' + os.getenv('ROUTE_TOKEN')
+    static_url_path = ROUTE_TOKEN + '/static'
+
+app = Flask(__name__, static_folder='static', static_url_path = static_url_path)
 
 if os.getenv('APPLICATION_ROOT'):
     app.config['APPLICATION_ROOT'] = os.getenv('APPLICATION_ROOT')
@@ -36,7 +42,7 @@ if not app.debug:
     app.logger.setLevel(logging.INFO)
 
 app.logger.info('CORS origins: %s', cors_origins)
-socketio = SocketIO(app, cors_allowed_origins=cors_origins)
+socketio = SocketIO(app, cors_allowed_origins=cors_origins, path=ROUTE_TOKEN + '/socket.io')
 
 def parse_names(names):
     name_split = names.split('/')
@@ -44,10 +50,11 @@ def parse_names(names):
     conn_names = ",".join(filter(None, name_split[1:]))
     return self_name, conn_names
 
-@app.route('/<path:names>')
+@app.route(ROUTE_TOKEN + '/<path:names>')
 def index(names):
     self_name, conn_names = parse_names(names)
     return render_template('index.html',
+        ROUTE_TOKEN=ROUTE_TOKEN,
         self_name=self_name,
         conn_names=conn_names,
         path='{}?{}'.format(names, request.query_string.decode()),
@@ -56,7 +63,7 @@ def index(names):
         statuses_rows=get_visible_count(),
         statuses_cols=len(conn_names.split(",")) + 1)
 
-@app.route('/manifest.json')
+@app.route(ROUTE_TOKEN + '/manifest.json')
 def manifest():
     names = request.query_string.decode()
     self_name, _ = parse_names(names)
@@ -68,7 +75,7 @@ def manifest():
     r.headers.set('Content-Type', 'text/json')
     return r
 
-@app.route('/static/<path:path>')
+@app.route(ROUTE_TOKEN + '/static/<path:path>')
 def static_path(path):
     return send_from_directory('static', path)
 
@@ -94,6 +101,17 @@ def set_status_message(message):
 def checkin_message(message):
     time_diff = user_checkin(message['self_name'])
     print('checkin message:', message, 'elapsed: %.2f sec' % time_diff)
+
+@app.route(ROUTE_TOKEN + '/api/iframe_sendmessage', methods=['POST'])
+def api_iframe_sendmessage():
+    iframe = request.form.get('iframe')
+    message = request.form.get('message')
+
+    params = {'iframe': iframe, 'message': message}
+    print('iframe_sendmessage', params)
+    socketio.emit('iframe_sendmessage', params, broadcast=True)
+    return 'ok'
+
 
 if __name__ == '__main__':
     socketio.run(app)
