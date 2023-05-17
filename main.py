@@ -70,7 +70,7 @@ def manifest():
 
     r = make_response(render_template('manifest.json',
         self_title=self_name.title(),
-        path=names))
+        path=ROUTE_TOKEN + '/' + names))
 
     r.headers.set('Content-Type', 'text/json')
     return r
