@@ -133,7 +133,11 @@
             var domain = ifr.src.split('/', 3);
             domain = domain[0] + '//' + domain[2];
             ifr.contentWindow.postMessage(JSON.parse(data.message), domain);
-        })
+        });
+        socket.on('reload_page', function(data) {
+            console.log('reload_page', data);
+            location.reload();
+        });
     }
 
     function addSideIframes(iframes, clock_height) {
