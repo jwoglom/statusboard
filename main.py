@@ -118,6 +118,17 @@ def api_reload_page():
     socketio.emit('reload_page', {}, broadcast=True)
     return 'ok'
 
+@app.route(ROUTE_TOKEN + '/api/refresh_page', methods=['POST'])
+def api_refresh_page():
+    print('refresh_page')
+    socketio.emit('refresh_page', {}, broadcast=True)
+    return 'ok'
+
+@app.route(ROUTE_TOKEN + '/api/reload_page', methods=['POST'])
+def api_reload_page():
+    print('reload_page')
+    socketio.emit('reload_page', {}, broadcast=True)
+    return 'ok'
 
 if __name__ == '__main__':
     socketio.run(app)

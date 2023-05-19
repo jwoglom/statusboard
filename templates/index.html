@@ -134,9 +134,17 @@
             domain = domain[0] + '//' + domain[2];
             ifr.contentWindow.postMessage(JSON.parse(data.message), domain);
         });
+        socket.on('refresh_page', function(data) {
+            console.log('refresh_page', data);
+            location.reload();
+        });
         socket.on('reload_page', function(data) {
             console.log('reload_page', data);
-            location.reload();
+            socket.disconnect();
+            socket.close();
+            socket = null;
+
+            setTimeout(init, 100);
         });
     }
 
@@ -317,7 +325,7 @@
         if (el.requestFullscreen) el.requestFullscreen();
     }
 
-    window.onload = function() {
+    function init() {
         readLocalConfig();
         initSocket();
         setInterval(checkin, 20 * 1000);
@@ -339,6 +347,7 @@
         }
 
     }
+    window.onload = init;
     </script>
     <style>
 * {
