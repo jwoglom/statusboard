@@ -124,5 +124,14 @@ def api_reload_page():
     socketio.emit('reload_page', {}, broadcast=True)
     return 'ok'
 
+@app.route(ROUTE_TOKEN + '/api/alert_dialog', methods=['POST'])
+def api_alert_dialog():
+    params = {}
+    for k in ['type', 'message', 'font', 'seconds']:
+        params[k] = request.form.get(k)
+    print('alert_dialog', params)
+    socketio.emit('alert_dialog', params, broadcast=True)
+    return 'ok'
+
 if __name__ == '__main__':
     socketio.run(app)

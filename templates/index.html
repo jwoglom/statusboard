@@ -146,6 +146,41 @@
 
             setTimeout(init, 100);
         });
+        socket.on('alert_dialog', function(data) {
+            console.log('alert_dialog', data);
+            if (!data.message) return;
+            if (data.type == 'js') {
+                alert(data.message);
+            } else {
+                closeAlertDialog();
+                var e = document.createElement('div');
+                e.style.position = 'fixed';
+                e.style.top = '12.5%';
+                e.style.left = '12.5%';
+                e.style.width = '75%';
+                e.style.paddingTop = '5%';
+                e.style.paddingBottom = '5%';
+                e.style.fontSize = data.font || '42px';
+                e.style.textAlign = 'center';
+                e.style.color = 'black';
+                e.style.backgroundColor = 'white';
+                e.style.zIndex = 99999;
+                e.innerText = data.message;
+                e.id = 'alert_dialog';
+                e.onclick = closeAlertDialog;
+                document.body.appendChild(e);
+                var duration = parseInt(data.seconds || 30) * 1000;
+                if (duration > 0) {
+                    setTimeout(closeAlertDialog, duration);
+                }
+            }
+        });
+    }
+
+    function closeAlertDialog() {
+        if (document.getElementById('alert_dialog')) {
+            document.getElementById('alert_dialog').remove();
+        }
     }
 
     function addSideIframes(iframes, clock_height) {
