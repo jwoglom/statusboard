@@ -138,15 +138,25 @@
             console.log('iframe_focus', data);
             var ifr = document.getElementById('iframe_' + data['iframe']);
             if (!ifr) return;
+            function clearZoom() {
+                ['125', '15', '175', '2', '25', '3'].forEach(function(z) {
+                    document.querySelectorAll('.zoom-'+z).forEach(function(i) {
+                        i.classList.remove('zoom-'+z);
+                    })
+                });
+            }
             document.getElementById('focusiframe_close').onclick = function() {
                 document.querySelectorAll('.in-focus-iframe').forEach(function(i) {
                     i.classList.remove('in-focus-iframe');
                 });
+                clearZoom();
                 document.getElementById('focusiframe_close').style.display = 'none';
             };
             if (data.disable) {
+                if (!ifr.parentElement.classList.contains('in-focus-iframe')) return;
                 ifr.parentElement.classList.remove('in-focus-iframe');
                 document.getElementById('focusiframe_close').style.display = 'none';
+                clearZoom();
                 return
             }
             document.getElementById('focusiframe_close').style.display = 'block';
@@ -518,6 +528,15 @@ body {
     display: inline;
     transform: scale(1.5);
     top: calc(10% * 1.5);
+}
+
+.iframe.in-focus-iframe.zoom-175 > iframe {
+    position: relative;
+    width: calc(100% / 1.75);
+    height: calc(100% / 1.75);
+    display: inline;
+    transform: scale(1.75);
+    top: calc(10% * 1.75);
 }
 
 .iframe.in-focus-iframe.zoom-2 > iframe {
