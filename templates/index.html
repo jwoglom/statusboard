@@ -134,6 +134,32 @@
             domain = domain[0] + '//' + domain[2];
             ifr.contentWindow.postMessage(JSON.parse(data.message), domain);
         });
+        socket.on('iframe_focus', function(data) {
+            console.log('iframe_focus', data);
+            var ifr = document.getElementById('iframe_' + data['iframe']);
+            if (!ifr) return;
+            document.getElementById('focusiframe_close').onclick = function() {
+                document.querySelectorAll('.in-focus-iframe').forEach(function(i) {
+                    i.classList.remove('in-focus-iframe');
+                });
+                document.getElementById('focusiframe_close').style.display = 'none';
+            };
+            if (data.disable) {
+                ifr.parentElement.classList.remove('in-focus-iframe');
+                document.getElementById('focusiframe_close').style.display = 'none';
+                return
+            }
+            document.getElementById('focusiframe_close').style.display = 'block';
+            ifr.parentElement.classList.add('in-focus-iframe');
+            if (data.zoom) {
+                ifr.parentElement.classList.add('zoom-' + data.zoom);
+            }
+            if (data.seconds) {
+                setTimeout(function() {
+                    ifr.parentElement.classList.remove('in-focus-iframe');
+                }, parseInt(data.seconds) * 1000);
+            }
+        });
         socket.on('refresh_page', function(data) {
             console.log('refresh_page', data);
             location.reload();
@@ -463,6 +489,79 @@ body {
     height: 100%;
 }
 
+.iframe.in-focus-iframe {
+    position: fixed;
+    top: 5%;
+    left: 5%;
+    width: 90%;
+    height: 90%;
+    z-index: 99998;
+}
+#main-iframe-area > .iframe.in-focus-iframe {
+    width: 90%;
+    height: 90%;
+}
+
+.iframe.in-focus-iframe.zoom-125 > iframe {
+    position: relative;
+    width: calc(100% / 1.25);
+    height: calc(100% / 1.25);
+    display: inline;
+    transform: scale(1.25);
+    top: calc(10% * 1.25);
+}
+
+.iframe.in-focus-iframe.zoom-15 > iframe {
+    position: relative;
+    width: calc(100% / 1.5);
+    height: calc(100% / 1.5);
+    display: inline;
+    transform: scale(1.5);
+    top: calc(10% * 1.5);
+}
+
+.iframe.in-focus-iframe.zoom-2 > iframe {
+    position: relative;
+    width: calc(100% / 2);
+    height: calc(100% / 2);
+    display: inline;
+    transform: scale(2);
+    top: calc(10% * 2);
+}
+
+.iframe.in-focus-iframe.zoom-25 > iframe {
+    position: relative;
+    width: calc(100% / 2.5);
+    height: calc(100% / 2.5);
+    display: inline;
+    transform: scale(2.5);
+    top: calc(10% * 2.5);
+}
+
+.iframe.in-focus-iframe.zoom-3 > iframe {
+    position: relative;
+    width: calc(100% / 2);
+    height: calc(100% / 2);
+    display: inline;
+    transform: scale(2);
+    top: calc(10% * 2);
+}
+
+#focusiframe_close {
+    display: none;
+    position: fixed;
+    right: 20px;
+    top: 20px;
+    width: 65px;
+    height: 65px;
+    background: white;
+    color: black;
+    border: 1px solid black;
+    font-size: 60px;
+    text-align: center;
+    z-index: 99999;
+}
+
 body[data-onecol] #main-iframe-area {
     display: block;
 }
@@ -514,7 +613,7 @@ body[data-accesscontrol] .row-container.self .title {
     </div>
 </script>
 <script type="text/template" id="iframe-tpl">
-    <div class="iframe">
+    <div class="iframe" id="iframe_div_{name}">
         <iframe src="{url}" id="iframe_{name}" allowtransparency=true scrolling=no></iframe>
     </div>
 </script>
@@ -534,6 +633,7 @@ body[data-accesscontrol] .row-container.self .title {
         </div>
         
     </div>
+    <div id="focusiframe_close">X</div>
 </body>
 </html>
 
