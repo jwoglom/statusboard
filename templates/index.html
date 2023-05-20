@@ -139,7 +139,7 @@
             var ifr = document.getElementById('iframe_' + data['iframe']);
             if (!ifr) return;
             function clearZoom() {
-                ['125', '15', '175', '2', '25', '3'].forEach(function(z) {
+                ['125', '15', '175', '2', '25', '3', '35'].forEach(function(z) {
                     document.querySelectorAll('.zoom-'+z).forEach(function(i) {
                         i.classList.remove('zoom-'+z);
                     })
@@ -559,11 +559,20 @@ body {
 
 .iframe.in-focus-iframe.zoom-3 > iframe {
     position: relative;
-    width: calc(100% / 2);
-    height: calc(100% / 2);
+    width: calc(100% / 3);
+    height: calc(100% / 3);
     display: inline;
-    transform: scale(2);
-    top: calc(10% * 2);
+    transform: scale(3);
+    top: calc(10% * 3);
+}
+
+.iframe.in-focus-iframe.zoom-35 > iframe {
+    position: relative;
+    width: calc(100% / 3.5);
+    height: calc(100% / 3.5);
+    display: inline;
+    transform: scale(3.5);
+    top: calc(10% * 3.5);
 }
 
 #focusiframe_close {
