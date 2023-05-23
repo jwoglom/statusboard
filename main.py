@@ -115,7 +115,7 @@ def api_iframe_sendmessage():
 @app.route(ROUTE_TOKEN + '/api/iframe_focus', methods=['POST'])
 def api_iframe_focus():
     params = {}
-    for k in ['iframe', 'disable', 'zoom', 'seconds']:
+    for k in ['iframe', 'disable', 'zoom', 'seconds', 'fullscreen']:
         params[k] = request.form.get(k)
     print('iframe_focus', params)
     socketio.emit('iframe_focus', params, broadcast=True)

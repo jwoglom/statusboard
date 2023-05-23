@@ -144,6 +144,9 @@
                         i.classList.remove('zoom-'+z);
                     })
                 });
+                document.querySelectorAll('.iframe.fullscreen').forEach(function(i) {
+                    i.classList.remove('fullscreen');
+                });
             }
             document.getElementById('focusiframe_close').onclick = function() {
                 document.querySelectorAll('.in-focus-iframe').forEach(function(i) {
@@ -161,12 +164,16 @@
             }
             document.getElementById('focusiframe_close').style.display = 'block';
             ifr.parentElement.classList.add('in-focus-iframe');
+            if (data.fullscreen) {
+                ifr.parentElement.classList.add('fullscreen');
+            }
             if (data.zoom) {
                 ifr.parentElement.classList.add('zoom-' + data.zoom);
             }
             if (data.seconds) {
                 setTimeout(function() {
                     ifr.parentElement.classList.remove('in-focus-iframe');
+                    clearZoom();
                 }, parseInt(data.seconds) * 1000);
             }
         });
@@ -498,8 +505,15 @@ body {
     width: 100%;
     height: 100%;
 }
-
 .iframe.in-focus-iframe {
+    position: fixed;
+    top: 25%;
+    left: 2.5%;
+    width: 65%;
+    height: 75%;
+    z-index: 99998;
+}
+.iframe.in-focus-iframe.fullscreen {
     position: fixed;
     top: 5%;
     left: 5%;
@@ -580,12 +594,13 @@ body {
     position: fixed;
     right: 20px;
     top: 20px;
-    width: 65px;
-    height: 65px;
+    width: 80px;
+    height: 80px;
     background: white;
     color: black;
     border: 1px solid black;
     font-size: 60px;
+    line-height: 80px;
     text-align: center;
     z-index: 99999;
 }
