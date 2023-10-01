@@ -84,7 +84,13 @@
             self_name: selfName,
             conn_names: document.body.getAttribute('data-conn-names')
         };
-        socket = io({path: '{{ROUTE_TOKEN}}/socket.io/'});
+        socket = io({
+            path: '{{ROUTE_TOKEN}}/socket.io/',
+            reconnection: true,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000,
+            reconnectionAttempts: 10000
+        });
         socket.on('connect', function() {
             var data = Object.assign({}, selfInfo);
             data['local_config'] = localConfig;
