@@ -2,7 +2,7 @@
 
 import os
 
-from flask import Flask, render_template, request, make_response, send_from_directory
+from flask import Flask, render_template, request, make_response, send_from_directory, abort
 from flask_socketio import SocketIO, emit
 
 from users import init_user, user_response, user_set_status, user_checkin, all_statuses
@@ -141,6 +141,34 @@ def api_alert_dialog():
     print('alert_dialog', params)
     socketio.emit('alert_dialog', params, broadcast=True)
     return 'ok'
+
+@app.route(ROUTE_TOKEN + '/api/set_status', methods=['POST'])
+def api_set_status():
+    params = {}
+    for k in ['self_name', 'status']:
+        params[k] = request.form.get(k)
+        if not params[k]:
+            return abort(400)
+    user_set_status(params['self_name'], params['status'])
+    socketio.emit('response', all_statuses(), broadcast=True)
+    return 'ok'
+
+@app.route(ROUTE_TOKEN + '/api/set_status_alternate', methods=['POST'])
+def api_set_status_alternate():
+    self_name = request.form.get('self_name')
+    status = ''
+    codes = [i.code for i in get_statuses()]
+    if self_name not in all_statuses()['statuses'] or all_statuses()['statuses'][self_name] == 'UNKNOWN':
+        status = codes[0]
+    else:
+        i = codes.index(all_statuses()['statuses'][self_name])
+        if i+1 == len(codes):
+            status = 'UNKNOWN'
+        else:
+            status = codes[(i+1) % len(codes)]
+    user_set_status(self_name, status)
+    socketio.emit('response', all_statuses(), broadcast=True)
+    return status
 
 if __name__ == '__main__':
     socketio.run(app)
