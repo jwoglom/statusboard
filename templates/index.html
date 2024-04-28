@@ -224,6 +224,10 @@
                 }
             }
         });
+        socket.on('alert_dialog_close', function(data) {
+            console.log('alert_dialog_close', data);
+            closeAlertDialog();
+        });
     }
 
     function closeAlertDialog() {
