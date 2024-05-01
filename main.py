@@ -143,7 +143,7 @@ def api_alert_dialog():
     return 'ok'
 
 @app.route(ROUTE_TOKEN + '/api/alert_dialog_close', methods=['POST'])
-def api_alert_dialog():
+def api_alert_dialog_close():
     print('alert_dialog_close')
     socketio.emit('alert_dialog_close', broadcast=True)
     return 'ok'
