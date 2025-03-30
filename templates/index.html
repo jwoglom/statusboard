@@ -74,6 +74,11 @@
         /* this is an approximation. doesn't work if screen is too narrow */
         width: calc({{statuses_cols}}/{{statuses_cols+1}} * 100vw);
     }
+
+    body[data-nostatus] #main-iframe-area {
+        top: 0px;
+        height: 100%;
+    }
     </style>
 
     <script type="text/javascript">
@@ -98,6 +103,12 @@
         });
         socket.on('init_response', function(config) {
             serverConfig = config;
+
+            if (config['noclock']) {
+                config['clock_height'] = ' ';
+                document.querySelector('.clock').remove()
+            }
+
             if (config['side_iframes']) {
                 addSideIframes(config['side_iframes'], config['clock_height']);   
             }
@@ -112,6 +123,12 @@
                 document.body.setAttribute('data-onecol','on');
             } else {
                 document.body.removeAttribute('data-onecol');
+            }
+
+            if (config['nostatus']) {
+                document.body.setAttribute('data-nostatus','on');
+            } else {
+                document.body.removeAttribute('data-nostatus');
             }
 
             if (config['main_iframe']) {
@@ -386,6 +403,7 @@
 
     function initClock() {
         setInterval(function() {
+            if (!document.querySelector('.clock')) return;
             var time = new Date().toLocaleTimeString();
             var noseconds = time.split(':')[0] + ':' + time.split(':')[1] + ' ' + time.split(' ')[1];
             document.querySelector('.clock').innerHTML = noseconds;
@@ -679,7 +697,7 @@ body[data-accesscontrol] .row-container.self .title {
             </div>
         </div>
         <div class="right-row-container"> 
-            <div class="clock">clock</div>
+            <div class="clock">&nbsp;</div>
             <div id="side-iframe-area">
 
             </div>
