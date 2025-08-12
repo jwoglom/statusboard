@@ -135,6 +135,15 @@
                 addMainIframe(config['main_iframe']);
             }
 
+            if (config['main_iframe_width']) {
+                document.querySelector('#main-iframe-area > div > iframe').style.width = config['main_iframe_width'];
+                document.querySelector('#main-iframe-area > div > iframe').style.position = 'absolute';
+                document.querySelector('#main-iframe-area > div > iframe').style.left = '0px';
+
+                document.querySelector('.right-row-container').style.left = config['main_iframe_width'];
+                document.querySelector('.right-row-container').style.width = 'calc(100vw - ' + config['main_iframe_width'] + ')';
+            }
+
             initConnNames();
 
             socket.emit('update', selfInfo);
