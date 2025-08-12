@@ -265,6 +265,9 @@
             if ('scrolling' in iframes[key]) {
                 document.querySelector('#iframe_' + iframes[key]['name']).setAttribute('scrolling', iframes[key]['scrolling']);
             }
+            if ('css' in iframes[key]) {
+                document.querySelector('#iframe_' + iframes[key]['name']).setAttribute('style', iframes[key]['css']);
+            }
             if (iframes[key]['height']) {
                 rows += iframes[key]['height'] + ' ';
             } else {
@@ -281,6 +284,9 @@
         area.insertAdjacentHTML('beforeend', render('iframe-tpl', iframe));
         if ('scrolling' in iframe) {
             document.querySelector('#iframe_' + iframe['name']).setAttribute('scrolling', iframe['scrolling']);
+        }
+        if ('css' in iframe) {
+            document.querySelector('#iframe_' + iframe['name']).setAttribute('style', iframe['css']);
         }
     }
 
